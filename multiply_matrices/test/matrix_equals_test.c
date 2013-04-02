@@ -1,5 +1,5 @@
-#include "../matrix.c"
-#include "../test.c"
+#include "../lib/matrix.c"
+#include "../lib/test.c"
 
 void shouldSameMatrixBeEqual(){
 	Matrix m1;
