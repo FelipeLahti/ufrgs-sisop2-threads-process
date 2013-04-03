@@ -28,8 +28,12 @@ Matrix *getMatrixFromFile(char *fileName) {
 	int lines, columns;
 	int i,j,temp;
 
-	FILE *file = fopen("test_files/matrix_2_2.txt", "r");
+	FILE *file = fopen(fileName, "r");
 	
+	if ( file == NULL ) {
+		printf("Could not read file: %s\n", fileName);
+	}
+
 	fscanf(file, "LINHAS = %d\n", &lines);
 	fscanf(file, "COLUNAS = %d\n", &columns);
 	
