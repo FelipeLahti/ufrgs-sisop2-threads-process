@@ -10,8 +10,12 @@ typedef struct {
 	int column;
 } LineColumnResult;
 
-key_t ipckeyAggregator, ipckeyProcess;
-int messageQueueIdAggregator, messageQueueIdProcess;
+typedef struct {
+	key_t ipckey;	
+	int id;	
+} MessageQueue;
+
+MessageQueue inQueue, outQueue;
 
 #define TOTAL_PROCESS 2
 
@@ -30,12 +34,12 @@ void childProcess(Matrix m1, Matrix m2){
 
 	while(1) {
 		LineColumnResult temp;
-		int received = msgrcv(messageQueueIdProcess, &temp, sizeof(LineColumnResult), 1, IPC_NOWAIT);
+		int received = msgrcv(inQueue.id, &temp, sizeof(LineColumnResult), 1, IPC_NOWAIT);
 
 		if (received >= 0){
 			temp.result = multiplyLineColumn(temp.line, temp.column, m1, m2);
 			temp.type = 2;
-			msgsnd(messageQueueIdAggregator, &temp, sizeof(LineColumnResult), 0);
+			msgsnd(outQueue.id, &temp, sizeof(LineColumnResult), 0);
 		} else {
 			break;
 		}
@@ -52,22 +56,24 @@ Matrix prepareResultMatrix(Matrix m1, Matrix m2) {
 	return result;
 }
 
+void initQueue(MessageQueue *queue) {
+	queue->ipckey = ftok(".", 'm');
+	queue->id = msgget(queue->ipckey, IPC_CREAT | 0666);
+}
+
 Matrix multipleMatrix(Matrix m1, Matrix m2){
 	Matrix result = prepareResultMatrix(m1,m2);
 	int i,j;
-
-	ipckeyProcess = ftok(".", 'm');
-	messageQueueIdProcess = msgget(ipckeyProcess, IPC_CREAT | 0666);
-
-	ipckeyAggregator = ftok("/tmp/aggregator", 42);
-	messageQueueIdAggregator = msgget(ipckeyAggregator, IPC_CREAT | 0666);
+	
+	initQueue(&inQueue);
+	initQueue(&outQueue);	
 
 	for (i = 0; i < result.width; ++i) {
 		for (j = 0; j < result.height; ++j) {
 			LineColumnResult lineColumnResult;
 			init_line_column(&lineColumnResult, i, j);
 
-			msgsnd(messageQueueIdProcess, &lineColumnResult, sizeof(LineColumnResult), 0);
+			msgsnd(inQueue.id, &lineColumnResult, sizeof(LineColumnResult), 0);
 		}
 	}
 
@@ -87,8 +93,7 @@ Matrix multipleMatrix(Matrix m1, Matrix m2){
 
 	while(1) {
 		LineColumnResult temp2;
-		int received = msgrcv(messageQueueIdAggregator, &temp2, sizeof(LineColumnResult), 2, IPC_NOWAIT);
-		
+		int received = msgrcv(outQueue.id, &temp2, sizeof(LineColumnResult), 2, IPC_NOWAIT);
 		if (received >= 0){			
 			printLineColumn(temp2);
 			result.matrix[temp2.line][temp2.column] = temp2.result;
