@@ -61,4 +61,5 @@ int main(){
 	shouldMultipleLineByColumnSimple();
 	shouldMultipleLineByColumnWithColumnLonger();
 	shouldMultipleLineByColumnInAQuadraticMatrix();
+	return 0;
 }

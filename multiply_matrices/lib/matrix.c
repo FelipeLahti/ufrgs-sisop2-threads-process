@@ -15,6 +15,14 @@ void allocMatrix(Matrix *matrix){
 	}
 }
 
+Matrix prepareMatrixMultiplicationResult(Matrix m1, Matrix m2) {
+	Matrix result;
+	result.width = m1.width;
+	result.height = m2.height;
+	allocMatrix(&result);
+	return result;
+}
+
 int matrixAreEqual(Matrix matrix1, Matrix matrix2){
 	if(	matrix1.width == matrix2.width && 
 		matrix2.height == matrix2.height) {
