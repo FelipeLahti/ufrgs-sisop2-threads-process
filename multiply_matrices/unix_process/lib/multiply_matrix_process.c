@@ -3,6 +3,8 @@
 #include <sys/ipc.h>
 #include <unistd.h>
 
+#define DEFAULT_PROCESS_NUMBER 2
+
 typedef struct {
 	long type;
 	int result;	
@@ -16,8 +18,6 @@ typedef struct {
 } MessageQueue;
 
 MessageQueue inQueue, outQueue;
-
-#define TOTAL_PROCESS 2
 
 void initLineColumnResultMessage(LineColumnResult *variable, int line, int column) {
 	variable->type = 1;
@@ -53,7 +53,8 @@ void childPartialResultProcess(Matrix m1, Matrix m2){
 	exit(0);
 }
 
-Matrix multipleMatrix(Matrix m1, Matrix m2){
+Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int processNumber) {
+
 	Matrix result = prepareMatrixMultiplicationResult(m1,m2);
 	int i,j;
 	
@@ -70,9 +71,9 @@ Matrix multipleMatrix(Matrix m1, Matrix m2){
 	}
 
 	//Dispatching process
-	pid_t *process = calloc(TOTAL_PROCESS, sizeof(pid_t));
+	pid_t *process = calloc(processNumber, sizeof(pid_t));
 
-	for (i = 0; i < TOTAL_PROCESS; ++i)	{
+	for (i = 0; i < processNumber; ++i)	{
 		process[i] = fork();
 
 		if (process[i] == 0) {
@@ -96,9 +97,13 @@ Matrix multipleMatrix(Matrix m1, Matrix m2){
 		}
 	}
 
-	for (i = 0; i < TOTAL_PROCESS; ++i) {
+	for (i = 0; i < processNumber; ++i) {
 		wait(&process[i]);
 	}
 
 	return result;
+}
+
+Matrix multipleMatrix(Matrix m1, Matrix m2){
+	return multipleMatrixUsingProcess(m1, m2, DEFAULT_PROCESS_NUMBER);
 }

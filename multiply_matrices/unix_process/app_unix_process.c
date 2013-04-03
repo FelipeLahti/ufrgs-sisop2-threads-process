@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "../lib/matrix.c"
+#include "lib/multiply_matrix_process.c"
 
 int getNumberOfProcess(int argc, char const *argv[]){
 	int i;
