@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "matrix.c"
 
 void assertThatMatrixAreEqual(Matrix actual, Matrix expected, char *message) {
 	if ( matrixAreEqual(actual, expected) ) {
