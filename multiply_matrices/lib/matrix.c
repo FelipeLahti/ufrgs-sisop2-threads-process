@@ -23,6 +23,33 @@ Matrix prepareMatrixMultiplicationResult(Matrix m1, Matrix m2) {
 	return result;
 }
 
+Matrix *getMatrixFromFile(char *fileName) {
+	Matrix *matrix = calloc(1, sizeof(Matrix));
+	int lines, columns;
+	int i,j,temp;
+
+	FILE *file = fopen("test_files/matrix_2_2.txt", "r");
+	
+	fscanf(file, "LINHAS = %d\n", &lines);
+	fscanf(file, "COLUNAS = %d\n", &columns);
+	
+	matrix->width = lines;
+	matrix->height = columns;
+	allocMatrix(matrix);
+
+	for (i = 0; i < lines; ++i) {
+		for (j = 0; j < columns; ++j)
+		{
+			fscanf(file, "%d", &temp);
+			matrix->matrix[i][j] = temp;
+		}
+	}
+
+	fclose(file);
+
+	return matrix;
+}
+
 int matrixAreEqual(Matrix matrix1, Matrix matrix2){
 	if(	matrix1.width == matrix2.width && 
 		matrix2.height == matrix2.height) {
