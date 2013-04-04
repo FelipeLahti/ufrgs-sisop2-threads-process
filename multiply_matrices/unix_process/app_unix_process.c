@@ -5,8 +5,8 @@
 
 int main(int argc, char const *argv[])
 {
-	Matrix *m1 = getMatrixFromFile("in1.txt");
-	Matrix *m2 = getMatrixFromFile("in2.txt");
+	Matrix *m1 = getMatrixFromFile(getFileMatrixName(argc, argv, 1));
+	Matrix *m2 = getMatrixFromFile(getFileMatrixName(argc, argv, 2));
 
 	int process = getNumberOfProcessOrThreadNumber(argc, argv);
 

@@ -32,6 +32,7 @@ Matrix *getMatrixFromFile(char *fileName) {
 	
 	if ( file == NULL ) {
 		printf("Could not read file: %s\n", fileName);
+		exit(1);
 	}
 
 	fscanf(file, "LINHAS = %d\n", &lines);
