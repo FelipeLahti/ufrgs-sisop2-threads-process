@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "../lib/matrix.c"
+#include "../lib/params.c"
 #include "lib/multiply_matrix_process.c"
 
 int main(int argc, char const *argv[])
