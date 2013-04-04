@@ -10,11 +10,7 @@ int main(int argc, char const *argv[])
 
 	int process = getNumberOfProcessOrThreadNumber(argc, argv);
 
-	printf("Multiplying matrices using %d process\n", process);
-
 	Matrix result = multipleMatrixUsingProcess(*m1,*m2, process);
-
-	printMatrix(result);
 
 	return 0;
 }
