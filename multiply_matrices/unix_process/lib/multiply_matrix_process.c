@@ -62,8 +62,8 @@ Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int processNumber) {
 	initQueue(&outQueue);	
 
 	//Sending work to the queue
-	for (i = 0; i < result.width; ++i) {
-		for (j = 0; j < result.height; ++j) {
+	for (i = 0; i < result.lines; ++i) {
+		for (j = 0; j < result.columns; ++j) {
 			LineColumnResult lineColumnResult;
 			initLineColumnResultMessage(&lineColumnResult, i, j);
 			msgsnd(inQueue.id, &lineColumnResult, sizeof(LineColumnResult), 0);
@@ -82,7 +82,7 @@ Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int processNumber) {
 	}
 
 	//Grouping results from each process
-	int totalCalls = result.width * result.height;
+	int totalCalls = result.lines * result.columns;
 
 	while(1) {
 		LineColumnResult partialResult;

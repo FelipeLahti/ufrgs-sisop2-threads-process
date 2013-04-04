@@ -2,13 +2,13 @@
 
 Matrix multipleMatrix(Matrix m1, Matrix m2){
 	Matrix result;
-	result.width = m1.width;
-	result.height = m2.height;
+	result.lines = m1.lines;
+	result.columns = m2.columns;
 	allocMatrix(&result);
 
 	int i,j;
-	for (i = 0; i < result.width; ++i) {
-		for (j = 0; j < result.height; ++j) {
+	for (i = 0; i < result.lines; ++i) {
+		for (j = 0; j < result.columns; ++j) {
 			result.matrix[i][j] = multiplyLineColumn(i, j, m1, m2);
 		}
 	}

@@ -1,6 +1,6 @@
 void shouldMultipleLineByColumnInAQuadraticMatrix(){
 	Matrix m1; 
-	m1.width = m1.height = 2;
+	m1.lines = m1.columns = 2;
 	allocMatrix(&m1);
 	m1.matrix[0][0] = 2; m1.matrix[0][1] = 3;
 	m1.matrix[1][0] = 4; m1.matrix[1][1] = 5;
@@ -13,12 +13,12 @@ void shouldMultipleLineByColumnInAQuadraticMatrix(){
 
 void shouldMultipleLineByColumnWithColumnLonger(){
 	Matrix m1; 
-	m1.width = 2; m1.height = 1;
+	m1.lines = 2; m1.columns = 1;
 	allocMatrix(&m1);
 	m1.matrix[0][0] = 2; m1.matrix[0][1] = 4;
 
 	Matrix m2; 
-	m2.width = 1; m2.height = 2;
+	m2.lines = 1; m2.columns = 2;
 	allocMatrix(&m2);
 	m2.matrix[0][0] = 3; 
 	m2.matrix[1][0] = 5;
@@ -30,7 +30,7 @@ void shouldMultipleLineByColumnWithColumnLonger(){
 
 void shouldMultipleLineByColumnSimple(){
 	Matrix m1; 
-	m1.width = m1.height = 2;
+	m1.lines = m1.columns = 2;
 	allocMatrix(&m1);
 	m1.matrix[0][0] = 2;
 	int result = multiplyLineColumn(0,0,m1,m1);
@@ -40,7 +40,7 @@ void shouldMultipleLineByColumnSimple(){
 
 void shouldMultipleMatrixTwoByTwo() {
 	Matrix m1; 
-	m1.width = m1.height = 2;
+	m1.lines = m1.columns = 2;
 	allocMatrix(&m1);
 	m1.matrix[0][0] = 2; m1.matrix[0][1] = 3;
 	m1.matrix[1][0] = 4; m1.matrix[1][1] = 5;
@@ -48,7 +48,7 @@ void shouldMultipleMatrixTwoByTwo() {
 	Matrix result = multipleMatrix(m1, m1);
 
 	Matrix expected; 
-	expected.width = expected.height = 2;
+	expected.lines = expected.columns = 2;
 	allocMatrix(&expected);
 	expected.matrix[0][0] = 16; expected.matrix[0][1] = 21;
 	expected.matrix[1][0] = 28; expected.matrix[1][1] = 37;

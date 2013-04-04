@@ -2,23 +2,23 @@
 #include "stdlib.h"
 
 typedef struct {
-	int width;
-	int height;
+	int lines;
+	int columns;
 	int **matrix;
 } Matrix;
 
 void allocMatrix(Matrix *matrix){
-	matrix->matrix = calloc(matrix->width, sizeof(int*));	
+	matrix->matrix = calloc(matrix->lines, sizeof(int*));	
 	int i = 0;		
-	for(i = 0; i < matrix->height; i++) {
-	    matrix->matrix[i] = calloc(matrix->height, sizeof(int));
+	for(i = 0; i < matrix->columns; i++) {
+	    matrix->matrix[i] = calloc(matrix->columns, sizeof(int));
 	}
 }
 
 Matrix prepareMatrixMultiplicationResult(Matrix m1, Matrix m2) {
 	Matrix result;
-	result.width = m1.width;
-	result.height = m2.height;
+	result.lines = m1.lines;
+	result.columns = m2.columns;
 	allocMatrix(&result);
 	return result;
 }
@@ -38,8 +38,8 @@ Matrix *getMatrixFromFile(char *fileName) {
 	fscanf(file, "LINHAS = %d\n", &lines);
 	fscanf(file, "COLUNAS = %d\n", &columns);
 	
-	matrix->width = lines;
-	matrix->height = columns;
+	matrix->lines = lines;
+	matrix->columns = columns;
 	allocMatrix(matrix);
 
 	for (i = 0; i < lines; ++i) {
@@ -56,11 +56,11 @@ Matrix *getMatrixFromFile(char *fileName) {
 }
 
 int matrixAreEqual(Matrix matrix1, Matrix matrix2){
-	if(	matrix1.width == matrix2.width && 
-		matrix2.height == matrix2.height) {
+	if(	matrix1.lines == matrix2.lines && 
+		matrix2.columns == matrix2.columns) {
 		int i, j;
-		for (i = 0; i < matrix1.width; ++i) {
-			for (j = 0; j < matrix1.height; ++j) {
+		for (i = 0; i < matrix1.lines; ++i) {
+			for (j = 0; j < matrix1.columns; ++j) {
 				if (matrix1.matrix[i][j] != matrix2.matrix[i][j]) {
 					return 0;
 				}
@@ -75,8 +75,8 @@ int matrixAreEqual(Matrix matrix1, Matrix matrix2){
 
 void printMatrix(Matrix matrix) {
 	int i,j;
-	for(i = 0; i < matrix.width; ++i){
-		for(j = 0; j < matrix.height; ++j){
+	for(i = 0; i < matrix.lines; ++i){
+		for(j = 0; j < matrix.columns; ++j){
 			printf("%d ", matrix.matrix[i][j]);
 		}
 		printf("\n");
@@ -86,7 +86,7 @@ void printMatrix(Matrix matrix) {
 int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
 	int sum = 0;
 	int i,j;
-	for (i = 0; i < m1.width; ++i) {
+	for (i = 0; i < m1.lines; ++i) {
 		sum += m1.matrix[line][i] * m2.matrix[i][column];
 	}
 	return sum;
