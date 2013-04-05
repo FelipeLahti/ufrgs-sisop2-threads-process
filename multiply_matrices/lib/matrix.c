@@ -85,7 +85,7 @@ void printMatrix(Matrix matrix) {
 
 int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
 	int sum = 0;
-	int i,j;
+	int i;
 	for (i = 0; i < m1.lines; ++i) {
 		sum += m1.matrix[line][i] * m2.matrix[i][column];
 	}
