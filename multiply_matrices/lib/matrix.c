@@ -1,6 +1,9 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#ifndef	_MATRIX_
+#define	_MATRIX_
+
 typedef struct {
 	int lines;
 	int columns;
@@ -91,3 +94,5 @@ int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
 	}
 	return sum;
 }
+
+#endif
