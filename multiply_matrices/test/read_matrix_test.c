@@ -3,14 +3,14 @@
 #include "../lib/test.c"
 
 void shouldReadMatrixSize(){
-	Matrix *matrix = getMatrixFromFile("test_files/matrix_2_2.txt");
+	Matrix *matrix = readMatrix("test_files/matrix_2_2.txt");
 	
 	assertThat(matrix->lines, 2, "shouldReadMatrixSize - lines");
 	assertThat(matrix->columns, 2, "shouldReadMatrixSize - columns");
 }
 
 void shouldReadMatrixTwoByTwo(){
-	Matrix *result = getMatrixFromFile("test_files/matrix_2_2.txt");
+	Matrix *result = readMatrix("test_files/matrix_2_2.txt");
 
 	Matrix expectedMatrix;
 	expectedMatrix.lines = expectedMatrix.columns = 2;

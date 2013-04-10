@@ -16,7 +16,7 @@ void setup(){
 void shouldWriteMatrix(){
     writeMatrix("matrix_test.txt", expectedMatrix);
     
-    Matrix *result = getMatrixFromFile("matrix_test.txt");
+    Matrix *result = readMatrix("matrix_test.txt");
 
     assertThatMatrixAreEqual(*result, expectedMatrix, "shouldWriteMatrix");
 }
@@ -24,7 +24,7 @@ void shouldWriteMatrix(){
 void shouldWriteMatrixHeader(){
     writeMatrix("matrix_test.txt", expectedMatrix);
     
-    Matrix *result = getMatrixFromFile("matrix_test.txt");
+    Matrix *result = readMatrix("matrix_test.txt");
     
     assertThat(result->lines, expectedMatrix.lines, "shouldWriteMatrixHeader - lines");
     assertThat(result->columns, expectedMatrix.columns, "shouldWriteMatrixHeader - columns");

@@ -26,7 +26,7 @@ Matrix prepareMatrixMultiplicationResult(Matrix m1, Matrix m2) {
 	return result;
 }
 
-Matrix *getMatrixFromFile(char *fileName) {
+Matrix *readMatrix(char *fileName) {
 	Matrix *matrix = calloc(1, sizeof(Matrix));
 	int lines, columns;
 	int i,j,temp;
