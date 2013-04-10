@@ -58,6 +58,27 @@ Matrix *getMatrixFromFile(char *fileName) {
 	return matrix;
 }
 
+void writeMatrix(char *fileName, Matrix matrix) {
+    FILE *file = fopen(fileName, "w+");
+	int i, j;
+	if ( file == NULL ) {
+		printf("Could not write to file: %s\n", fileName);
+		exit(1);
+	}
+    
+    fprintf(file, "LINHAS = %d\n", matrix.lines);
+    fprintf(file, "COLUNAS = %d\n", matrix.columns);
+
+    for (i = 0; i < matrix.lines; ++i) {
+		for (j = 0; j < matrix.columns; ++j) {
+			fprintf(file, "%d ", matrix.matrix[i][j]);
+		}
+        fprintf(file, "\n");
+	}
+    
+    fclose(file);
+}
+
 int matrixAreEqual(Matrix matrix1, Matrix matrix2){
 	if(	matrix1.lines == matrix2.lines && 
 		matrix2.columns == matrix2.columns) {
