@@ -18,6 +18,15 @@ void allocMatrix(Matrix *matrix){
 	}
 }
 
+int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
+	int sum = 0;
+	int i;
+	for (i = 0; i < m1.lines; ++i) {
+		sum += m1.matrix[line][i] * m2.matrix[i][column];
+	}
+	return sum;
+}
+
 Matrix prepareMatrixMultiplicationResult(Matrix m1, Matrix m2) {
 	Matrix result;
 	result.lines = m1.lines;
@@ -46,8 +55,7 @@ Matrix *readMatrix(char *fileName) {
 	allocMatrix(matrix);
 
 	for (i = 0; i < lines; ++i) {
-		for (j = 0; j < columns; ++j)
-		{
+		for (j = 0; j < columns; ++j) {
 			fscanf(file, "%d", &temp);
 			matrix->matrix[i][j] = temp;
 		}
@@ -105,15 +113,6 @@ void printMatrix(Matrix matrix) {
 		}
 		printf("\n");
 	}
-}
-
-int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
-	int sum = 0;
-	int i;
-	for (i = 0; i < m1.lines; ++i) {
-		sum += m1.matrix[line][i] * m2.matrix[i][column];
-	}
-	return sum;
 }
 
 #endif
