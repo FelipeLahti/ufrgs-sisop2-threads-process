@@ -1,0 +1,4 @@
+LINHAS = 2
+COLUNAS = 2
+2 2
+2 2
