@@ -1,80 +1,46 @@
 #include <pthread.h>
 #include <stdlib.h>
-#define DEFAULT_THREADS_NUMBER 3
+#define DEFAULT_THREADS_NUMBER 20
 
 typedef struct {
-    int line;
-    int column;
-} Position;
-
-typedef struct {
-    Matrix *result;
     Matrix *m1;
     Matrix *m2;
-    Position *position;
-}Args;
+    Matrix *result;
+    int threadId;
+    int numberOfThreads;
+} Args;
 
-
-void setPosition(Position *position, int line, int column){
-    position->line = line;
-    position->column = column;
-}
-
-Position nextPosition(Args *args){
-    Position pos;
-    //lock
-    int maxLines = args->result->lines;
-    int maxColumns = args->result->columns;
-    
-    if(args->position->column < maxColumns - 1){
-        pos.line = args->position->line;
-        args->position->column++;
-        pos.column = args->position->column;
-    } else if (args->position->line < maxLines - 1){
-        args->position->line++;
-        args->position->column = 0;
-        pos.line = args->position->line;
-        pos.column = args->position->column;
-    }
-    else {
-        pos.column = pos.line = -1;
-    }
-    //unlock
-    return pos;
-}
-
-int hasNextPosition(Position position){
-    return position.line == -1 && position.column == -1 ? 0 : 1;
-}
-
-void *childPartialResultProcess(void *arg) {
+void *childProcess(void *arg) {
     Args *args = (Args *) arg;
-    
-    Position posToCalculate = nextPosition(args);
-    while(hasNextPosition(posToCalculate)){
-        args->result->matrix[posToCalculate.line][posToCalculate.column] = multiplyLineColumn(posToCalculate.line, posToCalculate.column, *args->m1, *args->m2);
-        posToCalculate = nextPosition(args);
+    int i, j;
+
+    for(i = args->threadId; i < args->result->lines; i+=args->numberOfThreads){
+        for(j = 0; j < args->result->columns; j++){
+            args->result->matrix[i][j] = multiplyLineColumn(i, j, *args->m1, *args->m2);
+        }
     }
-    return 0;
+    
+    pthread_exit(NULL);
 }
 
-Matrix multiplyMatrixUsingPthreads(Matrix m1, Matrix m2, int threadsNumber) {
+Matrix multiplyMatrixUsingPthreads(Matrix m1, Matrix m2, int numberOfThreads) {
     Matrix result = prepareMatrixMultiplicationResult(m1,m2);
 
-    pthread_t *threads = calloc(threadsNumber, sizeof(pthread_t));
-    Args args;
-    args.result = &result;
-    args.m1 = &m1;
-    args.m2 = &m2;
-    args.position = calloc(1, sizeof(Position));
-    setPosition(args.position, 0, -1);
-
+    pthread_t *threads = calloc(numberOfThreads, sizeof(pthread_t));
+    
     int i;
-    for (i = 0; i < threadsNumber; ++i) {
-        pthread_create(&threads[i], NULL, childPartialResultProcess, &args);
+    for (i = 0; i < numberOfThreads; i++) {
+        Args *args = calloc(1, sizeof(Args));
+        args->result = &result;
+        args->m1 = &m1;
+        args->m2 = &m2;
+        args->numberOfThreads = numberOfThreads;
+        args->threadId = i;
+        
+        pthread_create(&threads[i], NULL, childProcess, args);
     }
 
-    for (i = 0; i < threadsNumber; ++i) {
+    for (i = 0; i < numberOfThreads; ++i) {
         pthread_t th = threads[i];
         pthread_join(th, NULL);
     }
