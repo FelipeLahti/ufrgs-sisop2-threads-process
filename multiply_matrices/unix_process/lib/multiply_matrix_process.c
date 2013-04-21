@@ -1,105 +1,82 @@
-#include <sys/types.h>
-#include <sys/msg.h>
-#include <sys/ipc.h>
+#include <stdio.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define DEFAULT_PROCESS_NUMBER 2
 
 typedef struct {
-	long type;
-	int result;	
-	int line;
-	int column;
-} LineColumnResult;
+    Matrix *m1;
+    Matrix *m2;
+    int* result;
+    int processId;
+    int numberOfProcess;
+} Args;
 
-typedef struct {
-	key_t ipckey;	
-	int id;	
-} MessageQueue;
+void childProcess(Args args){
+    int i, j;
 
-MessageQueue inQueue, outQueue;
-
-void initLineColumnResultMessage(LineColumnResult *variable, int line, int column) {
-	variable->type = 1;
-	variable->result = 0;
-	variable->line = line;
-	variable->column = column;
-}
-
-void initQueue(MessageQueue *queue) {
-	queue->ipckey = ftok(".", 'm');
-	queue->id = msgget(queue->ipckey, IPC_CREAT | 0666);
-}
-
-void printLineColumnResult(LineColumnResult p){
-	printf("Line: %d Column: %d Result: %d\n", p.line, p.column, p.result);	
-}
-
-void childPartialResultProcess(Matrix m1, Matrix m2){
-
-	while(1) {
-		LineColumnResult temp;
-		int received = msgrcv(inQueue.id, &temp, sizeof(LineColumnResult), 1, IPC_NOWAIT);
-
-		if (received >= 0){
-			temp.result = multiplyLineColumn(temp.line, temp.column, m1, m2);
-			temp.type = 2;
-			msgsnd(outQueue.id, &temp, sizeof(LineColumnResult), 0);
-		} else {
-			break;
-		}
-	}
-
+    for(i= args.processId;i < args.m1->lines; i+= args.numberOfProcess){
+        for(j = 0; j < args.m2->columns; j++){
+            args.result[i * args.m2->columns + j] = multiplyLineColumn(i, j, *args.m1, *args.m2);
+        }
+    }
+    
 	exit(0);
 }
 
-Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int processNumber) {
+Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int numberOfProcess) {
 
+    int i, j;
 	Matrix result = prepareMatrixMultiplicationResult(m1,m2);
-	int i,j;
-	
-	initQueue(&inQueue);
-	initQueue(&outQueue);	
+    
+    //Allocating shared memory for process
+    int *sharedResult = calloc(result.lines * result.columns, sizeof(int));
+    int segmentId;
+    segmentId = shmget(IPC_PRIVATE, sizeof(sharedResult), S_IRUSR | S_IWUSR);
+    
+    if ( segmentId < 0) {
+        printf("None shared segment memory available. Check shm opens with cmd 'ipcs' in your terminal.");
+        exit(1);
+    }
+    
+    sharedResult = (int *) shmat(segmentId, NULL, 0);
+    
+	//Dispatching all process
+	pid_t *process = calloc(numberOfProcess, sizeof(pid_t));
 
-	//Sending work to the queue
-	for (i = 0; i < result.lines; ++i) {
-		for (j = 0; j < result.columns; ++j) {
-			LineColumnResult lineColumnResult;
-			initLineColumnResultMessage(&lineColumnResult, i, j);
-			msgsnd(inQueue.id, &lineColumnResult, sizeof(LineColumnResult), 0);
-		}
-	}
-
-	//Dispatching process
-	pid_t *process = calloc(processNumber, sizeof(pid_t));
-
-	for (i = 0; i < processNumber; ++i)	{
+	for (i = 0; i < numberOfProcess && i < result.lines; ++i)	{
 		process[i] = fork();
+        Args args;
+        args.m1 = &m1;
+        args.m2 = &m2;
+        args.numberOfProcess = numberOfProcess;
+        args.processId = i;
+        args.result = sharedResult;
 
 		if (process[i] == 0) {
-			childPartialResultProcess(m1, m2);
+			childProcess(args);
 		}
 	}
 
-	//Grouping results from each process
-	int totalCalls = result.lines * result.columns;
-
-	while(1) {
-		LineColumnResult partialResult;
-		int received = msgrcv(outQueue.id, &partialResult, sizeof(LineColumnResult), 2, IPC_NOWAIT);
-		if (received >= 0) {			
-			result.matrix[partialResult.line][partialResult.column] = partialResult.result;
-			totalCalls--;
-		} else {
-			if(totalCalls <= 0) {
-				break;
-			}
-		}
+    //Waiting process to finish calculation
+	for (i = 0; i < numberOfProcess && i < result.lines; ++i) {
+        pid_t pid = process[i];
+        waitpid(pid,0,0);
 	}
-
-	for (i = 0; i < processNumber; ++i) {
-		wait(&process[i]);
-	}
+    
+    //Getting results
+    for(i = 0; i < result.lines; i++) {
+        for(j = 0; j < result.columns; j++){
+            result.matrix[i][j] = sharedResult[i * result.columns + j];
+        }
+    }
+    
+    //Clean up
+    shmdt(sharedResult);
+    shmctl(segmentId, IPC_RMID, NULL);
 
 	return result;
 }
