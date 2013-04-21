@@ -1,6 +1,6 @@
 #include <pthread.h>
 #include <stdlib.h>
-#define DEFAULT_THREADS_NUMBER 20
+#define DEFAULT_THREADS_NUMBER 3
 
 typedef struct {
     Matrix *m1;

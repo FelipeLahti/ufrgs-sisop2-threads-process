@@ -8,9 +8,9 @@ int main(int argc, char const *argv[])
 	Matrix *m1 = readMatrix(getFileMatrixName(argc, argv, 1));
 	Matrix *m2 = readMatrix(getFileMatrixName(argc, argv, 2));
     
-	int process = getNumberOfProcessOrThreadNumber(argc, argv);
+	int threads = getNumberOfProcessOrThreadNumber(argc, argv);
     
-	Matrix result = multiplyMatrixUsingPthreads(*m1,*m2, process);
+	Matrix result = multiplyMatrixUsingPthreads(*m1,*m2, threads);
     
     writeMatrix("out.txt", result);
     
