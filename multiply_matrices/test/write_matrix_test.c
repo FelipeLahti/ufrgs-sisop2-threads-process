@@ -9,8 +9,8 @@ void setup(){
     expectedMatrix.columns = 3;
     allocMatrix(&expectedMatrix);
     
-    expectedMatrix.matrix[0][0] = 1; expectedMatrix.matrix[0][1] = 2; expectedMatrix.matrix[0][2] = 3;
-    expectedMatrix.matrix[1][0] = 4; expectedMatrix.matrix[1][1] = 5; expectedMatrix.matrix[1][2] = 6;
+    setMatrixItem(&expectedMatrix, 0, 0, 1); setMatrixItem(&expectedMatrix, 0, 1, 2); setMatrixItem(&expectedMatrix, 0, 2, 3);
+    setMatrixItem(&expectedMatrix, 1, 0, 4); setMatrixItem(&expectedMatrix, 1, 1, 5); setMatrixItem(&expectedMatrix, 1, 2, 6);
 }
 
 void shouldWriteMatrix(){

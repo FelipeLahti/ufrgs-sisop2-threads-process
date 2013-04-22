@@ -15,8 +15,8 @@ void shouldReadMatrixTwoByTwo(){
 	Matrix expectedMatrix;
 	expectedMatrix.lines = expectedMatrix.columns = 2;
 	allocMatrix(&expectedMatrix);
-	expectedMatrix.matrix[0][0] = 17; expectedMatrix.matrix[0][1] = 8;
-	expectedMatrix.matrix[1][0] = 4; expectedMatrix.matrix[1][1] = 23;
+	setMatrixItem(&expectedMatrix, 0, 0, 17); setMatrixItem(&expectedMatrix, 0, 1, 8);
+	setMatrixItem(&expectedMatrix, 1, 0, 4);  setMatrixItem(&expectedMatrix, 1, 1, 23);
 
 	assertThatMatrixAreEqual(*result, expectedMatrix, "shouldReadMatrixTwoByTwo");
 }

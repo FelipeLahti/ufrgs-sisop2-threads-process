@@ -7,23 +7,19 @@
 typedef struct {
 	int lines;
 	int columns;
-	int **matrix;
+	int *matrix;
 } Matrix;
 
 void setMatrixItem(Matrix *matrix, int line, int column, int value){
-    matrix->matrix[line][column] = value;
+    matrix->matrix[line * matrix->columns + column] = value;
 }
 
 int getMatrixItem(Matrix *matrix, int line, int column){
-    return matrix->matrix[line][column];
+    return matrix->matrix[line * matrix->columns + column];
 }
 
 void allocMatrix(Matrix *matrix){
-	matrix->matrix = calloc(matrix->lines, sizeof(int*));	
-	int i = 0;		
-	for(i = 0; i < matrix->columns; i++) {
-	    matrix->matrix[i] = calloc(matrix->columns, sizeof(int));
-	}
+	matrix->matrix = calloc(matrix->lines * matrix->columns, sizeof(int));
 }
 
 int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {

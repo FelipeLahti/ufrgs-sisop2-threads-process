@@ -27,6 +27,7 @@ def run_tests
 					run_one_test file[0]
 				else
 					puts "Fail to compile #{file[0]}" 
+					exit
 				end
 			end
 		end

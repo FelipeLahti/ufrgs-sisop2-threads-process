@@ -5,12 +5,12 @@ void shouldSameMatrixBeEqual(){
 	Matrix m1;
 	m1.lines = m1.columns = 2;
 	allocMatrix(&m1);
-	m1.matrix[1][1] = 5;
+    setMatrixItem(&m1, 1, 1, 5);
 
 	Matrix m2;
 	m2.lines = m2.columns = 2;	
 	allocMatrix(&m2);
-	m2.matrix[1][1] = 5;
+	setMatrixItem(&m2, 1, 1, 5);
 
 	assertThatMatrixAreEqual(m1, m2, "shouldTwoMatrixBeEqual");
 }
@@ -19,12 +19,12 @@ void shouldDifferentMatrixNotBeEqual(){
 	Matrix m1;
 	m1.lines = m1.columns = 2;
 	allocMatrix(&m1);
-	m1.matrix[1][1] = 5;
+	setMatrixItem(&m1, 1, 1, 5);
 
 	Matrix m2;
 	m2.lines = m2.columns = 2;	
 	allocMatrix(&m2);
-	m2.matrix[1][1] = 4;
+    setMatrixItem(&m2, 1, 1, 4);
 
 	assertThatMatrixAreNotEqual(m1, m2, "shouldDifferentMatrixNotBeEqual");
 }
