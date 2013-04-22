@@ -10,6 +10,14 @@ typedef struct {
 	int **matrix;
 } Matrix;
 
+void setMatrixItem(Matrix *matrix, int line, int column, int value){
+    matrix->matrix[line][column] = value;
+}
+
+int getMatrixItem(Matrix *matrix, int line, int column){
+    return matrix->matrix[line][column];
+}
+
 void allocMatrix(Matrix *matrix){
 	matrix->matrix = calloc(matrix->lines, sizeof(int*));	
 	int i = 0;		
@@ -22,7 +30,7 @@ int multiplyLineColumn(int line, int column, Matrix m1, Matrix m2) {
 	int sum = 0;
 	int i;
 	for (i = 0; i < m1.lines; ++i) {
-		sum += m1.matrix[line][i] * m2.matrix[i][column];
+		sum += getMatrixItem(&m1, line, i) * getMatrixItem(&m2, i, column);
 	}
 	return sum;
 }
@@ -57,7 +65,7 @@ Matrix *readMatrix(char *fileName) {
 	for (i = 0; i < lines; ++i) {
 		for (j = 0; j < columns; ++j) {
 			fscanf(file, "%d", &temp);
-			matrix->matrix[i][j] = temp;
+			setMatrixItem(matrix, i, j, temp);
 		}
 	}
 
@@ -79,7 +87,7 @@ void writeMatrix(char *fileName, Matrix matrix) {
 
     for (i = 0; i < matrix.lines; ++i) {
 		for (j = 0; j < matrix.columns; ++j) {
-			fprintf(file, "%d ", matrix.matrix[i][j]);
+			fprintf(file, "%d ", getMatrixItem(&matrix, i,j));
 		}
         fprintf(file, "\n");
 	}
@@ -93,7 +101,7 @@ int matrixAreEqual(Matrix matrix1, Matrix matrix2){
 		int i, j;
 		for (i = 0; i < matrix1.lines; ++i) {
 			for (j = 0; j < matrix1.columns; ++j) {
-				if (matrix1.matrix[i][j] != matrix2.matrix[i][j]) {
+				if (getMatrixItem(&matrix1, i, j) != getMatrixItem(&matrix2,i,j)) {
 					return 0;
 				}
  			}
@@ -109,7 +117,7 @@ void printMatrix(Matrix matrix) {
 	int i,j;
 	for(i = 0; i < matrix.lines; ++i){
 		for(j = 0; j < matrix.columns; ++j){
-			printf("%d ", matrix.matrix[i][j]);
+			printf("%d ", getMatrixItem(&matrix, i, j));
 		}
 		printf("\n");
 	}
