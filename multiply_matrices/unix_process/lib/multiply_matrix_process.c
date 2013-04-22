@@ -70,7 +70,7 @@ Matrix multipleMatrixUsingProcess(Matrix m1, Matrix m2, int numberOfProcess) {
     //Getting results
     for(i = 0; i < result.lines; i++) {
         for(j = 0; j < result.columns; j++){
-            result.matrix[i][j] = sharedResult[i * result.columns + j];
+            setMatrixItem(&result, i, j, sharedResult[i * result.columns + j]);
         }
     }
     

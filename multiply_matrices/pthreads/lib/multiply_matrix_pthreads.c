@@ -16,7 +16,7 @@ void *childProcess(void *arg) {
 
     for(i = args->threadId; i < args->result->lines; i+=args->numberOfThreads){
         for(j = 0; j < args->result->columns; j++){
-            args->result->matrix[i][j] = multiplyLineColumn(i, j, *args->m1, *args->m2);
+            setMatrixItem(args->result, i, j, multiplyLineColumn(i, j, *args->m1, *args->m2));
         }
     }
     
