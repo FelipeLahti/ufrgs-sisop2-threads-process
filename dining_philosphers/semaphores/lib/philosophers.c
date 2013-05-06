@@ -12,8 +12,9 @@ int state[5];
 void changeStateAndPrint (int philosopherNumber, char newState){
 		
 	int i;
+	sem_wait(&Printing);
 	state[philosopherNumber] = newState;
-	printf("this is :%d", philosopherNumber);
+	//printf("this is :%d", philosopherNumber);
 	for (i=0;i<5;i++){
 		if (state[i] == EATING )
 			printf("E ");
@@ -29,21 +30,21 @@ void *philosopherThread(void *ptr) {
     int philosopherNumber = *((int *) ptr);
     int sleepTime;
     while (1) {
-	//changeStateAndPrint(philosopherNumber, HUNGRY);
 	sleepTime = rand() % 10 + 1;
 	sleep(sleepTime);
+	changeStateAndPrint(philosopherNumber, HUNGRY);
         sem_wait(&Room) ;
         sem_wait(&Fork[philosopherNumber]) ;
         sem_wait(&Fork[(philosopherNumber+1) % 5]) ; //for now, its fixed
-	printf("%d started eating\n",philosopherNumber);
-	//changeStateAndPrint(philosopherNumber, EATING);
+	//printf("%d started eating\n",philosopherNumber);
+	changeStateAndPrint(philosopherNumber, EATING);
 	sleepTime = rand() % 10 + 1;
 	sleep(sleepTime);
-	printf("%d finished eating\n",philosopherNumber);
+	//printf("%d finished eating\n",philosopherNumber);
         sem_post(&Fork[philosopherNumber]) ;
         sem_post(&Fork[(philosopherNumber+1) % 5]) ; //also change here
         sem_post(&Room) ;
-    	//changeStateAndPrint(philosopherNumber, THINKING);
+    	changeStateAndPrint(philosopherNumber, THINKING);
     }
     pthread_exit(0);
 }
