@@ -9,8 +9,8 @@
 int main(int argc, char const *argv[])
 {
 	srand(time(NULL));
-	//int threads = getNumberOfProcessOrThreadNumber(argc, argv);
-	int philosophers = 5;	
+	int philosophers = getNumberOfProcessOrThreadNumber(argc, argv);
+	//int philosophers = 5;	
 	philosophersUsingSemaphores(philosophers);
     
 	return 0;

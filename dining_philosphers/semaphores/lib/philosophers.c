@@ -8,14 +8,15 @@
 sem_t Printing; 
 sem_t Room;
 sem_t *Fork;
-int state[5];
+int *state;
+int philosophers;
 void changeStateAndPrint (int philosopherNumber, char newState){
 		
 	int i;
 	sem_wait(&Printing);
 	state[philosopherNumber] = newState;
 	//printf("this is :%d", philosopherNumber);
-	for (i=0;i<5;i++){
+	for (i=0;i<philosophers;i++){
 		if (state[i] == EATING )
 			printf("E ");
 		if (state[i] == HUNGRY )
@@ -35,14 +36,14 @@ void *philosopherThread(void *ptr) {
 	changeStateAndPrint(philosopherNumber, HUNGRY);
         sem_wait(&Room) ;
         sem_wait(&Fork[philosopherNumber]) ;
-        sem_wait(&Fork[(philosopherNumber+1) % 5]) ; //for now, its fixed
+        sem_wait(&Fork[(philosopherNumber+1) % philosophers]) ; //for now, its fixed
 	//printf("%d started eating\n",philosopherNumber);
 	changeStateAndPrint(philosopherNumber, EATING);
 	sleepTime = rand() % 10 + 1;
 	sleep(sleepTime);
 	//printf("%d finished eating\n",philosopherNumber);
         sem_post(&Fork[philosopherNumber]) ;
-        sem_post(&Fork[(philosopherNumber+1) % 5]) ; //also change here
+        sem_post(&Fork[(philosopherNumber+1) % philosophers]) ; //also change here
         sem_post(&Room) ;
     	changeStateAndPrint(philosopherNumber, THINKING);
     }
@@ -50,24 +51,26 @@ void *philosopherThread(void *ptr) {
 }
 
 void philosophersUsingSemaphores( int numberOfThreads) {
-    pthread_t *threads = calloc(numberOfThreads, sizeof(sizeof(pthread_t)));
-    Fork = calloc(numberOfThreads,sizeof(sem_t));
-    //state = calloc(numberOfThreads,sizeof(char));
-    int i, argsAux[5];
-    sem_init(&Room, 0, 4);
+    philosophers = numberOfThreads;
+    pthread_t *threads = calloc(philosophers, sizeof(sizeof(pthread_t)));
+    Fork = calloc(philosophers,sizeof(sem_t));
+    state = calloc(philosophers,sizeof(int));
+    int i, *argsAux;
+    argsAux = calloc(philosophers,sizeof(int));
+    sem_init(&Room, 0, philosophers -1);
     sem_init(&Printing, 0, 1);
-    for(i=0;i<5;i++) {
+    for(i=0;i<philosophers;i++) {
         sem_init(&Fork[i], 0, 1);    
     }   
-    for (i = 0; i < numberOfThreads; i++) {
+    for (i = 0; i < philosophers; i++) {
 	state[i] = THINKING;
     }
-    for (i = 0; i < numberOfThreads; i++) {
+    for (i = 0; i < philosophers; i++) {
 	argsAux[i] = i;        
         pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]);
     }
 	
-    for(i=0;i<5;i++) {
+    for(i=0;i<philosophers;i++) {
         pthread_join(threads[i], NULL);
     }
 
