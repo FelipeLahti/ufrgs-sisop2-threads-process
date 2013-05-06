@@ -30,6 +30,8 @@ void *philosopherThread(void *ptr) {
     int sleepTime;
     while (1) {
 	//changeStateAndPrint(philosopherNumber, HUNGRY);
+	sleepTime = rand() % 10 + 1;
+	sleep(sleepTime);
         sem_wait(&Room) ;
         sem_wait(&Fork[philosopherNumber]) ;
         sem_wait(&Fork[(philosopherNumber+1) % 5]) ; //for now, its fixed
@@ -37,17 +39,17 @@ void *philosopherThread(void *ptr) {
 	//changeStateAndPrint(philosopherNumber, EATING);
 	sleepTime = rand() % 10 + 1;
 	sleep(sleepTime);
+	printf("%d finished eating\n",philosopherNumber);
         sem_post(&Fork[philosopherNumber]) ;
         sem_post(&Fork[(philosopherNumber+1) % 5]) ; //also change here
         sem_post(&Room) ;
-	printf("%d finished eating\n",philosopherNumber);
     	//changeStateAndPrint(philosopherNumber, THINKING);
     }
     pthread_exit(0);
 }
 
 void philosophersUsingSemaphores( int numberOfThreads) {
-    pthread_t *threads = calloc(numberOfThreads, sizeof(char));
+    pthread_t *threads = calloc(numberOfThreads, sizeof(sizeof(pthread_t)));
     Fork = calloc(numberOfThreads,sizeof(sem_t));
     //state = calloc(numberOfThreads,sizeof(char));
     int i, argsAux[5];
