@@ -51,11 +51,11 @@ void *philosopherThread(void *ptr) {
 }
 
 void philosophersUsingSemaphores( int numberOfThreads) {
+    int i, *argsAux;
     philosophers = numberOfThreads;
     pthread_t *threads = calloc(philosophers, sizeof(sizeof(pthread_t)));
     Fork = calloc(philosophers,sizeof(sem_t));
     state = calloc(philosophers,sizeof(int));
-    int i, *argsAux;
     argsAux = calloc(philosophers,sizeof(int));
     sem_init(&Room, 0, philosophers -1);
     sem_init(&Printing, 0, 1);
@@ -66,7 +66,7 @@ void philosophersUsingSemaphores( int numberOfThreads) {
 	state[i] = THINKING;
     }
     for (i = 0; i < philosophers; i++) {
-	argsAux[i] = i;        
+	   argsAux[i] = i;        
         pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]);
     }
 	

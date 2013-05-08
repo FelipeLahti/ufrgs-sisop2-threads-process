@@ -1,6 +1,6 @@
 #include "stdlib.h"
 #include "../lib/params.c"
-#include "lib/new_philosophers.c"
+#include "lib/philosophers.c"
 #include <time.h>
 #include <stdlib.h>
 
