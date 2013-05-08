@@ -5,17 +5,18 @@
 #define EATING 2
 #define HUNGRY 3
 
-sem_t Printing; 
-sem_t Room;
-sem_t *Fork;
+pthread_mutex_t m;
+pthread_cond_t *cond_state;
 int *state;
 int philosophers;
-void changeStateAndPrint (int philosopherNumber, char newState){
-		
+int *right_hungry;
+int *left_hungry; //this is to avoid starvation
+//o algoritmo usado foi o que esta no livro do silberchatz http://www.google.de/url?sa=t&rct=j&q=operating%20system%20concepts%20pdf&source=web&cd=1&ved=0CDMQFjAA&url=http%3A%2F%2Fiit.qau.edu.pk%2Fbooks%2FOS_8th_Edition.pdf&ei=1T2IUY7YJe-w4APr94HYAQ&usg=AFQjCNHJuAZTm-YxdmXzTEW5jwNLk7Rbdw&cad=rja
+
+//url acima se tu qusier dar uma olhada, tem na definicao do trabalho aonde olhar
+void changeStateAndPrint (int philosopherNumber, int newState){	//gambiarra pra setar um estado e imprimir todos os filosofos
 	int i;
-	sem_wait(&Printing);
 	state[philosopherNumber] = newState;
-	//printf("this is :%d", philosopherNumber);
 	for (i=0;i<philosophers;i++){
 		if (state[i] == EATING )
 			printf("E ");
@@ -25,54 +26,76 @@ void changeStateAndPrint (int philosopherNumber, char newState){
 			printf("T ");	
 	}
 	printf("\n");
-	sem_post(&Printing);
+}
+
+void test(int i) { // como test sempre e chamado por pickup ou putdown, que ja estao no mutex, nao precisamos mutex aqui...
+	if ((state[(i + philosophers - 1) % philosophers] !=EATING) && (state[i] ==HUNGRY) && (state[(i + 1) % philosophers] !=EATING) && !right_hungry[i] && !left_hungry[i] ) {
+		changeStateAndPrint(i,EATING);
+		pthread_cond_signal(&cond_state[i]);
+	}
+	
+}
+
+
+void pickup(int i) { //o deadlock e evitado pois o filosofo pega os dois talheres de forma exclusiva
+	pthread_mutex_lock(&m);
+	//printf("pickup%d \n", i);
+	changeStateAndPrint(i,HUNGRY);
+	test(i);
+	if (state [i] != EATING) pthread_cond_wait(&cond_state[i], &m); 
+	right_hungry[(i + 1) % philosophers] = 0;
+        left_hungry[(i + philosophers - 1) % philosophers] = 0;	
+	pthread_mutex_unlock(&m);			
+}
+void putdown(int i) { 
+	pthread_mutex_lock(&m);
+	changeStateAndPrint(i,THINKING);
+	test((i + philosophers - 1) % philosophers);
+	if (state[(i + philosophers - 1) % philosophers] == HUNGRY)
+		left_hungry[i] = 1; //serve para evitar a starvation, ou seja, se quando devolvemos o talher, o vizinho quer comer, damos a prioridade pra ele, pra evitar que alguem fique comendo como um gordo indefinidamente e cometa starvation
+	test((i + 1) % philosophers);
+	if (state[(i + 1) % philosophers])
+		right_hungry[i] = 1;
+	pthread_mutex_unlock(&m);
 }
 void *philosopherThread(void *ptr) {
     int philosopherNumber = *((int *) ptr);
     int sleepTime;
     while (1) {
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
-	changeStateAndPrint(philosopherNumber, HUNGRY);
-        sem_wait(&Room) ;
-        sem_wait(&Fork[philosopherNumber]) ;
-        sem_wait(&Fork[(philosopherNumber+1) % philosophers]) ; //for now, its fixed
-	//printf("%d started eating\n",philosopherNumber);
-	changeStateAndPrint(philosopherNumber, EATING);
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
-	//printf("%d finished eating\n",philosopherNumber);
-        sem_post(&Fork[philosopherNumber]) ;
-        sem_post(&Fork[(philosopherNumber+1) % philosophers]) ; //also change here
-        sem_post(&Room) ;
-    	changeStateAndPrint(philosopherNumber, THINKING);
+        pickup(philosopherNumber);
+		sleepTime = rand() % 10 + 1;
+		sleep(sleepTime);
+		putdown(philosopherNumber);
+		sleepTime = rand() % 10 + 1;
+		sleep(sleepTime);
+     	
     }
     pthread_exit(0);
 }
 
 void philosophersUsingSemaphores( int numberOfThreads) {
     philosophers = numberOfThreads;
-    pthread_t *threads = calloc(philosophers, sizeof(sizeof(pthread_t)));
-    Fork = calloc(philosophers,sizeof(sem_t));
-    state = calloc(philosophers,sizeof(int));
-    int i, *argsAux;
-    argsAux = calloc(philosophers,sizeof(int));
-    sem_init(&Room, 0, philosophers -1);
-    sem_init(&Printing, 0, 1);
-    for(i=0;i<philosophers;i++) {
-        sem_init(&Fork[i], 0, 1);    
+     int i, *argsAux;
+    pthread_t *threads = calloc(numberOfThreads, sizeof(sizeof(pthread_t)));
+    cond_state = calloc(numberOfThreads,sizeof(pthread_cond_t)); //variaveis de condicao
+    state = calloc(numberOfThreads,sizeof(int));
+    argsAux = calloc(numberOfThreads,sizeof(int));
+    left_hungry = calloc(numberOfThreads,sizeof(int)); //para starvation
+    right_hungry = calloc(numberOfThreads,sizeof(int));
+    pthread_mutex_init(&m, NULL); //mutex para simular monitor
+    for(i=0;i<numberOfThreads;i++) {
+		left_hungry[i] = 0;
+		right_hungry[i] = 0;
+		pthread_cond_init(&cond_state[i], NULL);  //inicializa conditions variables, e todos estao pensando
+		state[i] = THINKING;    
     }   
-    for (i = 0; i < philosophers; i++) {
-	state[i] = THINKING;
-    }
-    for (i = 0; i < philosophers; i++) {
-	argsAux[i] = i;        
-        pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]);
+    for (i = 0; i < numberOfThreads; i++) {
+		argsAux[i] = i;        
+        pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]); //cria philosphers threads
     }
 	
-    for(i=0;i<philosophers;i++) {
+    for(i=0;i<numberOfThreads;i++) {
         pthread_join(threads[i], NULL);
     }
 
 }
-
