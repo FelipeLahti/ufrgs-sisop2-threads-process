@@ -5,46 +5,54 @@
 #define EATING 2
 #define HUNGRY 3
 
-sem_t Printing; 
+sem_t Printing;
 sem_t Room;
 sem_t *Fork;
 int *state;
 int philosophers;
+
 void changeStateAndPrint (int philosopherNumber, char newState){
-		
-	int i;
-	sem_wait(&Printing);
-	state[philosopherNumber] = newState;
-	//printf("this is :%d", philosopherNumber);
-	for (i=0;i<philosophers;i++){
-		if (state[i] == EATING )
-			printf("E ");
-		if (state[i] == HUNGRY )
-			printf("H ");	
-		if (state[i] == THINKING )
-			printf("T ");	
-	}
-	printf("\n");
-	sem_post(&Printing);
+    int i;
+    sem_wait(&Printing);
+    state[philosopherNumber] = newState;
+    char *msg = calloc(philosophers * 2, sizeof(char));
+
+    for(i = 0; i < philosophers; i++){
+        if (state[i] == EATING)   msg[i] = 'E';
+        if (state[i] == HUNGRY)   msg[i] = 'H';
+        if (state[i] == THINKING) msg[i] = 'T';
+        msg[i+1] = ' ';
+    }
+    printf("%s\n", msg);
+
+    sem_post(&Printing);
 }
+
+void randomSleep(){
+    int sleepTime;
+    sleepTime = rand() % 10 + 1;
+    sleep(sleepTime);
+}
+
 void *philosopherThread(void *ptr) {
     int philosopherNumber = *((int *) ptr);
-    int sleepTime;
+
     while (1) {
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
-	changeStateAndPrint(philosopherNumber, HUNGRY);
+        randomSleep();
+        changeStateAndPrint(philosopherNumber, HUNGRY);
+
         sem_wait(&Room) ;
         sem_wait(&Fork[philosopherNumber]) ;
         sem_wait(&Fork[(philosopherNumber+1) % philosophers]) ; //for now, its fixed
-	//printf("%d started eating\n",philosopherNumber);
-	changeStateAndPrint(philosopherNumber, EATING);
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
-	//printf("%d finished eating\n",philosopherNumber);
+
+    	changeStateAndPrint(philosopherNumber, EATING);
+
+        randomSleep();
+
         sem_post(&Fork[philosopherNumber]) ;
         sem_post(&Fork[(philosopherNumber+1) % philosophers]) ; //also change here
         sem_post(&Room) ;
+
     	changeStateAndPrint(philosopherNumber, THINKING);
     }
     pthread_exit(0);
@@ -57,22 +65,24 @@ void philosophersUsingSemaphores( int numberOfThreads) {
     Fork = calloc(philosophers,sizeof(sem_t));
     state = calloc(philosophers,sizeof(int));
     argsAux = calloc(philosophers,sizeof(int));
+
     sem_init(&Room, 0, philosophers -1);
     sem_init(&Printing, 0, 1);
-    for(i=0;i<philosophers;i++) {
-        sem_init(&Fork[i], 0, 1);    
-    }   
-    for (i = 0; i < philosophers; i++) {
-	state[i] = THINKING;
+
+    for(i = 0; i < philosophers; i++) {
+        sem_init(&Fork[i], 0, 1);
     }
+
     for (i = 0; i < philosophers; i++) {
-	   argsAux[i] = i;        
+	   state[i] = THINKING;
+    }
+
+    for (i = 0; i < philosophers; i++) {
+        argsAux[i] = i;
         pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]);
     }
-	
-    for(i=0;i<philosophers;i++) {
+
+    for(i = 0; i < philosophers; i++) {
         pthread_join(threads[i], NULL);
     }
-
 }
-
