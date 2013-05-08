@@ -48,12 +48,11 @@ void *philosopherThread(void *ptr) {
     	changeStateAndPrint(philosopherNumber, EATING);
 
         randomSleep();
-
+	changeStateAndPrint(philosopherNumber, THINKING);
         sem_post(&Fork[philosopherNumber]) ;
         sem_post(&Fork[(philosopherNumber+1) % philosophers]) ; //also change here
         sem_post(&Room) ;
 
-    	changeStateAndPrint(philosopherNumber, THINKING);
     }
     pthread_exit(0);
 }
