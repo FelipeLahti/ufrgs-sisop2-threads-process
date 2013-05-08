@@ -51,11 +51,11 @@ void putdown(int i) {
 	pthread_mutex_lock(&m);
 	changeStateAndPrint(i,THINKING);
 	test((i + philosophers - 1) % philosophers);
-	if (state[(i + philosophers - 1) % philosophers] == HUNGRY)
-		left_hungry[i] = 1; //serve para evitar a starvation, ou seja, se quando devolvemos o talher, o vizinho quer comer, damos a prioridade pra ele, pra evitar que alguem fique comendo como um gordo indefinidamente e cometa starvation
+	//if (state[(i + philosophers - 1) % philosophers] == HUNGRY)
+	//	left_hungry[i] = 1; //serve para evitar a starvation, ou seja, se quando devolvemos o talher, o vizinho quer comer, damos a prioridade pra ele, pra evitar que alguem fique comendo como um gordo indefinidamente e cometa starvation
 	test((i + 1) % philosophers);
-	if (state[(i + 1) % philosophers])
-		right_hungry[i] = 1;
+	//if (state[(i + 1) % philosophers])
+	//	right_hungry[i] = 1;
 	pthread_mutex_unlock(&m);
 }
 void *philosopherThread(void *ptr) {
@@ -63,11 +63,11 @@ void *philosopherThread(void *ptr) {
     int sleepTime;
     while (1) {
         pickup(philosopherNumber);
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
-	putdown(philosopherNumber);
-	sleepTime = rand() % 10 + 1;
-	sleep(sleepTime);
+		sleepTime = rand() % 10 + 1;
+		sleep(sleepTime);
+		putdown(philosopherNumber);
+		sleepTime = rand() % 10 + 1;
+		sleep(sleepTime);
      	
     }
     pthread_exit(0);
