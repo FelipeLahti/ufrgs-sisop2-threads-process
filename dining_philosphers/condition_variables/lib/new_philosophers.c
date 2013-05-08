@@ -51,11 +51,11 @@ void putdown(int i) {
 	pthread_mutex_lock(&m);
 	changeStateAndPrint(i,THINKING);
 	test((i + philosophers - 1) % philosophers);
-	//if (state[(i + philosophers - 1) % philosophers] == HUNGRY)
-	//	left_hungry[i] = 1; //serve para evitar a starvation, ou seja, se quando devolvemos o talher, o vizinho quer comer, damos a prioridade pra ele, pra evitar que alguem fique comendo como um gordo indefinidamente e cometa starvation
+	if (state[(i + philosophers - 1) % philosophers] == HUNGRY)
+		left_hungry[i] = 1; //serve para evitar a starvation, ou seja, se quando devolvemos o talher, o vizinho quer comer, damos a prioridade pra ele, pra evitar que alguem fique comendo como um gordo indefinidamente e cometa starvation
 	test((i + 1) % philosophers);
-	//if (state[(i + 1) % philosophers])
-	//	right_hungry[i] = 1;
+	if (state[(i + 1) % philosophers])
+		right_hungry[i] = 1;
 	pthread_mutex_unlock(&m);
 }
 void *philosopherThread(void *ptr) {
@@ -75,21 +75,22 @@ void *philosopherThread(void *ptr) {
 
 void philosophersUsingSemaphores( int numberOfThreads) {
     philosophers = numberOfThreads;
+     int i, *argsAux;
     pthread_t *threads = calloc(numberOfThreads, sizeof(sizeof(pthread_t)));
     cond_state = calloc(numberOfThreads,sizeof(pthread_cond_t)); //variaveis de condicao
     state = calloc(numberOfThreads,sizeof(int));
+    argsAux = calloc(numberOfThreads,sizeof(int));
     left_hungry = calloc(numberOfThreads,sizeof(int)); //para starvation
     right_hungry = calloc(numberOfThreads,sizeof(int));
-    int i, *argsAux;
     pthread_mutex_init(&m, NULL); //mutex para simular monitor
     for(i=0;i<numberOfThreads;i++) {
-	left_hungry[i] = 0;
-	right_hungry[i] = 0;
-	pthread_cond_init(&cond_state[i], NULL);  //inicializa conditions variables, e todos estao pensando
-	state[i] = THINKING;    
+		left_hungry[i] = 0;
+		right_hungry[i] = 0;
+		pthread_cond_init(&cond_state[i], NULL);  //inicializa conditions variables, e todos estao pensando
+		state[i] = THINKING;    
     }   
     for (i = 0; i < numberOfThreads; i++) {
-	argsAux[i] = i;        
+		argsAux[i] = i;        
         pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]); //cria philosphers threads
     }
 	
