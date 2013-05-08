@@ -5,7 +5,6 @@
 #define EATING 2
 #define HUNGRY 3
 
-pthread_mutex_t printing;
 pthread_mutex_t m;
 pthread_cond_t *cond_state;
 int *state;
@@ -76,25 +75,25 @@ void *philosopherThread(void *ptr) {
 
 void philosophersUsingSemaphores( int numberOfThreads) {
     philosophers = numberOfThreads;
-    pthread_t *threads = calloc(philosophers, sizeof(sizeof(pthread_t)));
-    cond_state = calloc(philosophers,sizeof(pthread_cond_t)); //variaveis de condicao
-    state = calloc(philosophers,sizeof(int));
-    left_hungry = calloc(philosophers,sizeof(int)); //para starvation
-    right_hungry = calloc(philosophers,sizeof(int));
+    pthread_t *threads = calloc(numberOfThreads, sizeof(sizeof(pthread_t)));
+    cond_state = calloc(numberOfThreads,sizeof(pthread_cond_t)); //variaveis de condicao
+    state = calloc(numberOfThreads,sizeof(int));
+    left_hungry = calloc(numberOfThreads,sizeof(int)); //para starvation
+    right_hungry = calloc(numberOfThreads,sizeof(int));
     int i, *argsAux;
     pthread_mutex_init(&m, NULL); //mutex para simular monitor
-    for(i=0;i<philosophers;i++) {
+    for(i=0;i<numberOfThreads;i++) {
 	left_hungry[i] = 0;
 	right_hungry[i] = 0;
 	pthread_cond_init(&cond_state[i], NULL);  //inicializa conditions variables, e todos estao pensando
 	state[i] = THINKING;    
     }   
-    for (i = 0; i < philosophers; i++) {
+    for (i = 0; i < numberOfThreads; i++) {
 	argsAux[i] = i;        
         pthread_create(&threads[i], NULL, philosopherThread, (void *) &argsAux[i]); //cria philosphers threads
     }
 	
-    for(i=0;i<philosophers;i++) {
+    for(i=0;i<numberOfThreads;i++) {
         pthread_join(threads[i], NULL);
     }
 
