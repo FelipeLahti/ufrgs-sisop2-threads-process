@@ -1,7 +1,7 @@
 EXECUTE_TIMES = 10
 
 def compile_pthreads
-	`gcc ../pthreads/pthreads.c -o pthreads_test_performance.out`
+	`gcc ../pthreads/pthreads.c -pthread -o pthreads_test_performance.out`
 end
 
 def execute_it number_of_threads
