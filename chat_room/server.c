@@ -63,18 +63,47 @@ void removeUser(USER **listP, USER element) {
 	printUserList();
 }
 
+void shootMessageToAllUsersFromUser(char *message, USER *from){
+	USER *iterator = firstList;
+
+	char messageTotal[300];
+	sprintf(messageTotal, "%s: %s", from->name, message);
+
+	while(iterator != 0) {
+		write(iterator->socket, messageTotal, strlen(messageTotal));
+		iterator = iterator->next;
+	}
+}
+
+void shootMessageToAllUsers(char *message){
+	USER *iterator = firstList;
+
+	while(iterator != 0) {
+		write(iterator->socket, message, strlen(message));
+		iterator = iterator->next;
+	}
+}
+
 void dispatchMessageUserEnterInRoom(USER *user) {
-	//send message to all user
-	//dispatchAll("User Fulano entered the room")
-	printf("User %s entered the room\n", user->name);
+	char message[300];
+	sprintf(message, "User %s entered the room\n", user->name);
+	shootMessageToAllUsers(message);
+	printf("%s\n", message);
 }
 
 void dispatchMessageUserChangedName(USER *user, char *oldName){
-	printf("%s changed nickname to %s\n", oldName, user->name);
+	char message[300];
+	sprintf(message, "%s changed nickname to %s\n", oldName, user->name);
+	shootMessageToAllUsers(message);
+	printf("%s\n", message);
 }
 
 void dispatchUserLeftRoom(USER *user){
-	printf("User %s left the room\n", user->name);
+	char message[300];
+	sprintf(message, "User %s left the room\n", user->name);
+	shootMessageToAllUsers(message);
+	printf("%s\n", message);
+
 	removeUser(&firstList, *user);
 	close(user->socket);
 	pthread_exit(NULL);
@@ -98,10 +127,12 @@ void *serverFunc (void * arg) {
 			dispatchUserLeftRoom(&user);
 			break;
 		}
-		
+
+		printf("Reading: %s", buffer);
+
 		if (strcmp(buffer, "/exit\n") == 0) {
 			dispatchUserLeftRoom(&user);
-		} else if(strstr(buffer, "/name") >= 0) {
+		} else if(strstr(buffer, "/name") != 0) {
 			if(strlen(user.name) <= 0) {
 				sscanf(buffer, "/name %s", user.name);
 				addUserToList(&user);
@@ -113,11 +144,8 @@ void *serverFunc (void * arg) {
 				dispatchMessageUserChangedName(&user, oldName);
 			}
 		} else {
-			printf("Here is the message: %s\n", buffer);
-			n = write(newsockfd,"I got your message", 18);
-			if (n < 0) {
-				printf("ERROR writing to socket");
-			}
+			printf("Dispatching to all: %s\n", buffer);
+			shootMessageToAllUsersFromUser(buffer, &user);
 		}
 	}
 }

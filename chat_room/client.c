@@ -23,10 +23,10 @@ void *clientFunc (void * arg) {
 	int n;
 	int sockfd = *(int *) arg;
 
-	bzero(buffer,256);
 
 	/* read from the socket */
 	while(1){
+		bzero(buffer,256);
 		n = read(sockfd, buffer, 256);
 		if (n <= 0) {
 			printf("Disconnected from server\n");
@@ -34,7 +34,7 @@ void *clientFunc (void * arg) {
 			pthread_exit(NULL);
 		}
 
-		printf("%s\n",buffer);
+		printf("%s",buffer);
 	}
 }
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		write(sockfd, buffer, strlen(buffer));
 
 		while(1) {
-			printf("%s: ", user.name);
+			//printf("%s: ", user.name);
 
 			bzero(buffer, 256);
 			fgets(buffer, 256, stdin);
@@ -106,9 +106,6 @@ int main(int argc, char *argv[])
 
 			if (strcmp(buffer, "/exit\n") == 0)
 				break;
-			//if (strcmp(buffer, "/check\n") == 0)
-				//check people in room
-				//break;
 		}
 		close(sockfd);
 	}
