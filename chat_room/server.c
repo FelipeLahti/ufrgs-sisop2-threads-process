@@ -16,10 +16,37 @@ typedef struct
 	struct USER *next;
 } USER;
 
+
+USER *firstList;
+USER *lastList;
+
 void addUserToList(USER *user){
 	//mutex
-
+	if (firstList == 0) {
+		firstList = lastList = user;
+		firstList->next = 0;
+	} else {
+		lastList->next = user;
+		lastList = user;
+	}
+	USER *iterator = firstList;
+	printf("Priting user list\n");
+	while(iterator != 0) {
+		printf("User -> %s\n", iterator->name);
+		iterator = iterator->next;
+	}
 	//libera mutex
+}
+
+void removeUser(USER *user) {
+	USER *iterator = firstList;
+	while(iterator != 0) {
+		if ( iterator->next == user ) {
+			iterator->next = user->next;
+		}
+		printf("User -> %s\n", iterator->name);
+		iterator = iterator->next;
+	}
 }
 
 void dispatchMessageUserEnterInRoom(USER *user) {
@@ -32,6 +59,13 @@ void dispatchMessageUserChangedName(USER *user, char *oldName){
 	printf("%s changed nickname to %s\n", oldName, user->name);
 }
 
+void dispatchUserLeftRoom(USER *user){
+	printf("User %s left the room\n", user->name);
+	removeUser(user);
+	close(user->socket);
+	pthread_exit(NULL);
+}
+
 void *serverFunc (void * arg) {
 	char buffer[256];
 	int n;
@@ -40,9 +74,6 @@ void *serverFunc (void * arg) {
 	USER user;
 	user.socket = newsockfd;
 
-	addUserToList(&user);
-
-
 	while(1) {
 
 		bzero(buffer, 256);
@@ -50,20 +81,16 @@ void *serverFunc (void * arg) {
 		/* read from the socket */
 		n = read(newsockfd, buffer, 256);
 		if (n < 0) {
-			printf("%s left the room\n", user.name);
+			dispatchUserLeftRoom(&user);
 			break;
-			pthread_exit(NULL);
 		}
 
 		if (strcmp(buffer, "/exit\n") == 0) {
-			//
-			printf("User disconnected from chat %s\n", user.name);
-			close(newsockfd);
-			pthread_exit(NULL);
+			dispatchUserLeftRoom(&user);
 		} else if(strstr(buffer, "/name") >= 0) {
-
 			if(strlen(user.name) <= 0) {
 				sscanf(buffer, "/name %s", user.name);
+				addUserToList(&user);
 				dispatchMessageUserEnterInRoom(&user);
 			} else {
 				char oldName[256];
@@ -73,7 +100,6 @@ void *serverFunc (void * arg) {
 			}
 		} else {
 			printf("Here is the message: %s\n", buffer);
-			/* write in the socket */
 			n = write(newsockfd,"I got your message", 18);
 			if (n < 0) {
 				printf("ERROR writing to socket");
