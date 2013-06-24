@@ -94,11 +94,11 @@ void *serverFunc (void * arg) {
 
 		/* read from the socket */
 		n = read(newsockfd, buffer, 256);
-		if (n < 0) {
+		if (n <= 0) {
 			dispatchUserLeftRoom(&user);
 			break;
 		}
-
+		
 		if (strcmp(buffer, "/exit\n") == 0) {
 			dispatchUserLeftRoom(&user);
 		} else if(strstr(buffer, "/name") >= 0) {
