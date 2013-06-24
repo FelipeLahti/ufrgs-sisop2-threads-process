@@ -11,7 +11,7 @@
 
 typedef struct
 {
-	char *name;
+	char name[256];
 	int socket;
 	struct USER *next;
 } USER;
@@ -25,10 +25,11 @@ void addUserToList(USER *user){
 void dispatchMessageUserEnterInRoom(USER *user) {
 	//send message to all user
 	//dispatchAll("User Fulano entered the room")
+	printf("User %s entered the room\n", user->name);
 }
 
 void dispatchMessageUserChangedName(USER *user, char *oldName){
-
+	printf("%s changed nickname to %s\n", oldName, user->name);
 }
 
 void *serverFunc (void * arg) {
@@ -48,31 +49,35 @@ void *serverFunc (void * arg) {
 
 		/* read from the socket */
 		n = read(newsockfd, buffer, 256);
-		if (n < 0)
-			printf("ERROR reading from socket");
+		if (n < 0) {
+			printf("%s left the room\n", user.name);
+			break;
+			pthread_exit(NULL);
+		}
 
 		if (strcmp(buffer, "/exit\n") == 0) {
 			//
-			printf("User discconected from chat\n\n");
+			printf("User disconnected from chat %s\n", user.name);
 			close(newsockfd);
 			pthread_exit(NULL);
-		} else if(strcmp(buffer, "/name\n") == 0) {
-			if(user.name == NULL) {
-				char *name = "NOME NOVO";
-				user.name = name;
+		} else if(strstr(buffer, "/name") >= 0) {
+
+			if(strlen(user.name) <= 0) {
+				sscanf(buffer, "/name %s", user.name);
 				dispatchMessageUserEnterInRoom(&user);
 			} else {
-				char *oldName = "NOME ANTIGO";
-				char *newName = "NOME NOVO";
-				user.name = newName;
+				char oldName[256];
+				strcpy(oldName, user.name);
+				sscanf(buffer, "/name %s", user.name);
 				dispatchMessageUserChangedName(&user, oldName);
 			}
 		} else {
 			printf("Here is the message: %s\n", buffer);
 			/* write in the socket */
 			n = write(newsockfd,"I got your message", 18);
-			if (n < 0)
+			if (n < 0) {
 				printf("ERROR writing to socket");
+			}
 		}
 	}
 }
@@ -93,15 +98,17 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(serv_addr.sin_zero), 8);
 
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-		printf("ERROR on binding");
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+		printf("ERROR on binding port");
+		exit(1);
+	}
 
 	listen(sockfd, 5);
 
 	clilen = sizeof(struct sockaddr_in);
 
 	while(1) {
-
+		printf("Waiting for connections...\n");
 		if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
 			printf("ERROR on accept");
 
