@@ -9,47 +9,58 @@
 
 #define PORT 4000
 
-typedef struct
-{
+typedef struct {
 	char name[256];
 	int socket;
 	struct USER *next;
 } USER;
 
-
 USER *firstList;
-USER *lastList;
 pthread_mutex_t m;
+
+void printUserList(){
+	USER *iterator = firstList;
+	printf("Printing user list\n");
+	while(iterator != 0) {
+		printf("User -> %s\n", iterator->name);
+		iterator = iterator->next;
+	}
+}
 
 void addUserToList(USER *user){
 	pthread_mutex_lock(&m);
 	if (firstList == 0) {
-		firstList = lastList = user;
+		firstList = user;
 		firstList->next = 0;
 	} else {
-		lastList->next = user;
-		lastList = user;
-	}
-	USER *iterator = firstList;
-	printf("Priting user list\n");
-	while(iterator != 0) {
-		printf("User -> %s\n", iterator->name);
-		iterator = iterator->next;
+		USER *iterator = firstList;
+
+		while(iterator->next != 0){
+			iterator = iterator->next;
+		}
+		iterator->next = user;
 	}
 	pthread_mutex_unlock(&m);
 }
 
-void removeUser(USER *user) {
+
+void removeUser(USER **listP, USER element) {
 	pthread_mutex_lock(&m);
-	USER *iterator = firstList;
-	while(iterator != 0) {
-		if ( iterator->next == user ) {
-			iterator->next = user->next;
+	USER *currP, *prevP;
+	prevP = NULL;
+
+	for (currP = *listP; currP != NULL; prevP = currP, currP = currP->next) {
+		if (currP->socket == element.socket) {
+			if (prevP == NULL) {
+				*listP = currP->next;
+			} else {
+				prevP->next = currP->next;
+			}
+			return;
 		}
-		printf("User -> %s\n", iterator->name);
-		iterator = iterator->next;
 	}
 	pthread_mutex_unlock(&m);
+	printUserList();
 }
 
 void dispatchMessageUserEnterInRoom(USER *user) {
@@ -64,7 +75,7 @@ void dispatchMessageUserChangedName(USER *user, char *oldName){
 
 void dispatchUserLeftRoom(USER *user){
 	printf("User %s left the room\n", user->name);
-	removeUser(user);
+	removeUser(&firstList, *user);
 	close(user->socket);
 	pthread_exit(NULL);
 }

@@ -28,9 +28,10 @@ void *clientFunc (void * arg) {
 	/* read from the socket */
 	while(1){
 		n = read(sockfd, buffer, 256);
-		if (n < 0) {
-			printf("Disconnect from server\n");
-			exit(1);
+		if (n <= 0) {
+			printf("Disconnected from server\n");
+			close(sockfd);
+			pthread_exit(NULL);
 		}
 
 		printf("%s\n",buffer);
@@ -43,7 +44,6 @@ void initUser(USER *user){
 	int len = strlen(user->name);
 	if (user->name[len - 1] == '\n')
 	    user->name[len - 1] = '\0';
-
 }
 
 void changeName (char * buffer) {
@@ -77,7 +77,6 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
 	bzero(&(serv_addr.sin_zero), 8);
 
-
 	if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
         printf("ERROR connecting\n");
 	}
@@ -100,14 +99,13 @@ int main(int argc, char *argv[])
 
 			/* write in the socket */
 			n = write(sockfd, buffer, strlen(buffer));
-			if (n < 0)
+			if (n < 0) {
 				printf("ERROR writing to socket\n");
+				exit(1);
+			}
 
 			if (strcmp(buffer, "/exit\n") == 0)
 				break;
-			//if (strcmp(buffer, "/name\n") == 0)
-				//change name
-				//break;
 			//if (strcmp(buffer, "/check\n") == 0)
 				//check people in room
 				//break;
