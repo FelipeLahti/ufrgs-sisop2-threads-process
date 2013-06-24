@@ -1,2 +1,2 @@
-gcc client.c -o client.out
-gcc server.c -o server.out
+gcc -pthread client.c -o client.out
+gcc -pthread server.c -o server.out

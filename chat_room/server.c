@@ -19,9 +19,10 @@ typedef struct
 
 USER *firstList;
 USER *lastList;
+pthread_mutex_t m;
 
 void addUserToList(USER *user){
-	//mutex
+	pthread_mutex_lock(&m);
 	if (firstList == 0) {
 		firstList = lastList = user;
 		firstList->next = 0;
@@ -35,10 +36,11 @@ void addUserToList(USER *user){
 		printf("User -> %s\n", iterator->name);
 		iterator = iterator->next;
 	}
-	//libera mutex
+	pthread_mutex_unlock(&m);
 }
 
 void removeUser(USER *user) {
+	pthread_mutex_lock(&m);
 	USER *iterator = firstList;
 	while(iterator != 0) {
 		if ( iterator->next == user ) {
@@ -47,6 +49,7 @@ void removeUser(USER *user) {
 		printf("User -> %s\n", iterator->name);
 		iterator = iterator->next;
 	}
+	pthread_mutex_unlock(&m);
 }
 
 void dispatchMessageUserEnterInRoom(USER *user) {
@@ -115,6 +118,7 @@ int main(int argc, char *argv[])
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	pthread_t thread;
+	pthread_mutex_init(&m, NULL);
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         printf("ERROR opening socket");
